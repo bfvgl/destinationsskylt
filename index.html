@@ -34,8 +34,6 @@ button.sec{background:var(--card);color:var(--ac);border:1px solid var(--ac);mar
 <label class="sm" id="playrow" hidden><input type="checkbox" id="play"> Spela rotation i förhandsvisningen</label></div>
 <div class="card">
 <div class="row"><label for="preset">Preset</label><select id="preset"></select><span></span></div>
-<div class="row"><label>Destinationsfärg</label><span></span><input type="color" id="c_dest" value="#ff8000"></div>
-<div class="row"><label>Viafärg</label><span></span><input type="color" id="c_via" value="#ff8000"></div>
 <div class="row"><label for="sec">Sek/text (GIF)</label><input type="text" id="sec" value="2" inputmode="decimal"><span></span></div>
 </div>
 <div id="pages"></div>
@@ -223,7 +221,7 @@ const show=f=>{cv.width=f.w;cv.height=f.h;cx.putImageData(new ImageData(f.data,f
 const say=s=>{$("status").textContent=s};
 const el=(t,a={},...k)=>{const e=document.createElement(t);for(const x in a){if(x in e)e[x]=a[x];else e.setAttribute(x,a[x])}e.append(...k);return e};
 let pages=[],active=0,tm=null,results=[];
-const newPage=(o={})=>({line:"",dest:"",via:"",fl:"",fd:"",fv:"",cl:P.cl,cb:P.cb,bgon:P.bgon,...o});
+const newPage=(o={})=>({line:"",dest:"",via:"",fl:"",fd:"",fv:"",cl:P.cl,cb:P.cb,bgon:P.bgon,cd:"#ff8000",cv:"#ff8000",...o});
 const autoCol=p=>{const c=P.auto&&P.auto[p.line.trim().toUpperCase()];if(!c)return false;p.cl=c[0];p.cb=c[1];p.bgon=true;return true};
 const sync=p=>{p.ui.cl.value=p.cl;p.ui.cb.value=p.cb;p.ui.bgon.checked=p.bgon};
 const draw=()=>{drawCards();update()};
@@ -253,7 +251,7 @@ function drawCards(){
    btn("Kopiera",()=>{pages.splice(i+1,0,newPage(p));active=i+1;draw()}),
    btn("Ta bort",()=>{pages.splice(i,1);active=Math.min(active,pages.length-1);draw()},pages.length<2));
   const card=el("div",{className:"card"},head,tx("line","Linje","cl"),row(el("label",{},cb," Bakgrund"),el("span"),bc),
-   tx("dest","Destination"),tx("via","Via"),row(el("label",{textContent:"Font"}),fs));
+   tx("dest","Destination","cd"),tx("via","Via","cv"),row(el("label",{textContent:"Font"}),fs));
   card.onfocusin=()=>{if(active!==i){active=i;update()}};
   box.append(card);
  });
@@ -261,11 +259,11 @@ function drawCards(){
 function update(){
  clearInterval(tm);
  CFG.sec=Math.max(.5,parseFloat($("sec").value.replace(",","."))||2);
- const G={cd:$("c_dest").value,cv:$("c_via").value},warns=[];
+ const warns=[];
  const empty=pages.length===1&&!(pages[0].line+pages[0].dest+pages[0].via).trim();
  results=pages.map((p,i)=>{
   const force=p.via.trim()&&!/\bvia\b/i.test(p.via)?(F[CFG.two]||null):null;
-  const r=layout({...p,...G,fo:{line:p.fl,dest:p.fd,via:p.fv}},force),pre=pages.length>1?`Text ${i+1}: `:"";
+  const r=layout({...p,fo:{line:p.fl,dest:p.fd,via:p.fv}},force),pre=pages.length>1?`Text ${i+1}: `:"";
   r.force=!!force;r.warns.forEach(w=>warns.push(pre+w));
   if(!r.px.size&&!empty)warns.push(pre+"tom, inget att rita");
   return r;
@@ -307,6 +305,6 @@ $("preset").onchange=()=>{
  pages.forEach(p=>{Object.assign(p,{fl:"",fd:"",fv:"",cl:P.cl,cb:P.cb,bgon:P.bgon});autoCol(p)});
  draw();
 };
-["c_dest","c_via","sec","play"].forEach(id=>$(id).addEventListener("input",update));
+["sec","play"].forEach(id=>$(id).addEventListener("input",update));
 pages=[newPage()];draw();
 </script></body></html>
